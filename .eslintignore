@@ -1,0 +1,13 @@
+build/*.js
+config/*.js
+src/assets/dep/*.js
+src/views/stock/StockChart.vue
+src/views/service-detail/TodayList.vue
+src/components/base/SortList2/ListRow.vue
+src/components/base/SortList3/ListRow.vue
+src/model/vuex/modules/user/actions/myStock.js
+src/views/mystocks/MyStockLeft.vue
+src/plugins/globalResource.js
+src/views/stocks/TickChart.vue
+src/views/stocks/KChart.vue
+src/views/stocks/TenDaysTickChart.vue

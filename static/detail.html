@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>----</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="=">
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=no" />
+    <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <link rel="stylesheet" id="default-skin" href="./mallSkin/skin_2.css">
+  <style>
+    #pop-area{
+      display: none;
+      width:100%;
+      position: fixed;
+      top:0;
+      left:0;
+      background:rgba(0,0,0,.4);
+      z-index: 3000;
+    }
+    #pop-img{
+      top:3%;
+      left:50%;
+      display: none;
+      position: fixed;
+      z-index: 3001;
+      width:auto;
+      margin:0 auto;
+      cursor:move;
+    }
+    .bottom-img{
+      position: relative;
+      width: 100%;
+    }
+    .bottom-img>img{
+      display: block;
+      width: 100%;
+    }
+    #detail .center {
+      margin-bottom: 0!important;
+    }
+  </style>
+</head>
+
+<body id="detail">
+  <div id="pop-area"></div>
+  <img id="pop-img">
+    <header>
+        <div class="topbar">
+            <div class="topbar-wrap">
+                <a href="javascript:;" class="logo"><img src=""></a>
+              <ul class="topbar-right">
+
+              </ul>
+            </div>
+        </div>
+    </header>
+    <div class="goods">
+        <div class="goods-logo">
+            <img src="http://aliyun.yuncaijing.com/upload/2017-04-12/58ee0c8f4ff45.png" alt="购买">
+        </div>
+        <div class="goods-detail">
+            <h3>----</h3>
+            <div class="goods-title">
+
+            </div>
+            <div class="goods-price">
+
+            </div>
+            <div class="goods-ser">
+
+            </div>
+            <div class="buy-goods">
+                立即购买
+            </div>
+        </div>
+    </div>
+    <div class="center">
+        <div class="product-compare">
+            <div class="product-compare-title">
+                <span class="column-equal"></span>
+                <span class="column-title-text">服务介绍</span>
+                <span class="column-equal"></span>
+            </div>
+            <div class="image-text">
+
+            </div>
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>功能介绍</th>
+                        <th>功能详情</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+  <div class="bottom-img"></div>
+    <div class="customer-service">
+        <a href="" title="联系客服"><img src="http://aliyun.yuncaijing.com/upload/2017-08-08/59897be2aefc8.png"></a>
+    </div>
+    <div class="modal">
+        <div class="modal-bg"></div>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h3 class="modal-title">订单金额</h3>
+                    <span class="close-btn"></span>
+                </header>
+                <div class="modal-center-wrap">
+                    <div class="price-wrap">
+                        ----
+                    </div>
+                    <div class="bank-transfer">
+                        <div class="left-part">
+                            <img class="bank-icon" src="http://aliyun.yuncaijing.com/upload/2017-08-08/59897c0b15169.png">
+                            <p>银行转账</p>
+                        </div>
+                        <div class="right-part ">
+
+                        </div>
+                    </div>
+                    <div class="alipay ">
+                        <div class="left-part ">
+                            <img class="alipay-icon " src="http://aliyun.yuncaijing.com/upload/2017-09-20/59c255ab4ceb6.png">
+                            <p>扫码支付</p>
+                        </div>
+                        <div class="right-part ">
+
+                        </div>
+                    </div>
+                  <p class="pay-tip">支付成功后请联系客服人员！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-detail">
+        <div class="modal-bg"></div>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h3 class="modal-title">功能详情</h3>
+                    <span class="close-btn"></span>
+                </header>
+                <div class="modal-center-wrap">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var logo = $('.topbar-wrap .logo > img'),
+                goods_logo = $('.goods .goods-logo > img'),
+                goods_name = $('.goods-detail h3'),
+                goods_title = $('.goods-detail .goods-title'),
+                goods_price = $('.goods-detail .goods-price'),
+                goods_ser = $('.goods-detail .goods-ser'),
+                buy_button = $('.goods-detail .buy-goods'),
+                image_text = $('.image-text'),
+                alipay = $('.alipay .right-part'),
+                bank_transfer = $('.bank-transfer .right-part'),
+                compare_table = $('.compare-table'),
+                goods_code = window.location.search.split('=')[1];
+            buy_button.on('click', function() {
+                var peice = goods_price.find('.inner-price>p').html(),
+                    modal = $('.modal');
+                if (peice) {
+                    modal.fadeIn().find('.price-wrap').html('￥' + peice);
+                } else {
+                    modal.fadeIn().find('.price-wrap').remove();
+                }
+            });
+            $('.modal-bg').on('click', function() {
+                $('.modal').fadeOut();
+                $('.modal-detail').fadeOut();
+            });
+            $('.goods-ser').on('click', 'span', function() {
+                var that = $(this),
+                    price = that.data('price'),
+                    old_price = that.data('old');
+                that.addClass('active').siblings('span').removeClass('active');
+                goods_price.find('.inner-price > p').html(price);
+                goods_price.find('.discount').find('.price').html('原价：￥' + old_price);
+            })
+            compare_table.on('click', '.view', function() {
+                var that = $(this);
+                $('.modal-detail').fadeIn().find('.modal-center-wrap').html(that.data('detail'));
+            });
+            /**
+             * 获取配置信息
+             * */
+            $.post("/mall/detail_info.html", {
+                goods_code: goods_code
+            }, function(data) {
+                var config = data.data,
+                    pay_info = config.pay_info,
+                    skin = config.skin,
+                    href = config.href;
+                logo.attr('src', config.logo);
+                goods_logo.attr('src', config.goods_detail.goods_logo);
+                goods_name.html(config.goods_detail.goods_name);
+                /**
+                 * 选取皮肤
+                 * */
+                if (skin) {
+                  $('head').append('<link rel="stylesheet" href="./mallSkin/skin_'+skin+'.css">');
+                  setTimeout(function() {
+                    $('#default-skin').remove();
+                  }, 500);
+                }
+                /**
+                 * 填充账户信息
+                 * */
+                if ($.isArray(pay_info)) {
+                  var bank_html = '',
+                      ailipay_html = '';
+                  for(var k in pay_info) {
+                    if (pay_info[k].bank.holder) {
+                      bank_html += '<ul class="account-info "><li><span>开户人：</span><span class="holder">'+pay_info[k].bank.holder+'</span></li><li><span>开户行：</span><span class="open-bank">'+pay_info[k].bank.open_bank+'</span></li><li><span>账<i class="text-space"></i>号：</span><span class="account">'+pay_info[k].bank.account+'</span></li></ul>';
+                    }
+                    if (pay_info[k].alipay_qrcode) {
+                      ailipay_html += '<img class="alipay-code" alt="扫描二维码" title="请扫描二维码" src="'+pay_info[k].alipay_qrcode+'">';
+                    }
+                  }
+                  if (bank_html) {
+                    bank_transfer.html(bank_html);
+                  }else {
+                    $('.bank-transfer').empty().remove();
+                  }
+                  if (ailipay_html) {
+                    alipay.html(ailipay_html);
+                  }else {
+                    $('.alipay').empty().remove();
+                  }
+                }else {
+                  $('.alipay').empty().remove();
+                  $('.bank-transfer').empty().remove();
+                }
+                /**
+                 *  修改浏览器标题
+                 * */
+                document.title = '购买' + config.goods_detail.goods_name;
+              /**
+               * 填充导航列表
+               * */
+              if ($.isArray(href)) {
+                var html = '';
+                for (var i in href) {
+                  html+= '<li> <a href="'+href[i].href_url+'" title="'+href[i].href_name+'" target="_self">'+href[i].href_name+'</a></li>';
+                }
+                $('.topbar-right').empty().html(html);
+              }
+                if (config.goods_detail.rebate_title) {
+                    goods_title.html('<p>' + config.goods_detail.rebate_title + '</p>');
+                }
+                if (parseFloat(config.goods_detail.price)) {
+                    var templet = '<div class="inner-price">',
+                        templet2 = '';
+                    config.goods_detail.price ? templet += '<p>' + config.goods_detail.price + '</p>' : {};
+                    if (!!parseFloat(config.goods_detail.prime_price)) {
+                        templet2 = '<div class="discount">';
+                        config.goods_detail.prime_price ? templet2 += '<p class="price">原价：￥' + config.goods_detail.prime_price + '</p>' : {};
+                        config.goods_detail.fav_time ? templet2 += '<p class="time">优惠截止至:' + config.goods_detail.fav_time + '</p>' : {};
+                        templet2 += '</div>';
+                    }
+                    templet += templet2 + '</div>';
+                    goods_price.html(templet);
+                }else {
+                    goods_price.remove();
+                }
+                if (config.ser_time) {
+                    var templet3 = '<div class="ser-items"><p>服务时长：</p>';
+                    var re = '';
+                    for (var i in config.ser_time) {
+                        re += '<span data-price="' + config.ser_time[i].price + '" data-old="' + config.ser_time[i].prime_price + '" class="' + first(i) + '">' + config.ser_time[i].ser_time + '</span>';
+                    }
+                    templet3 += re + '</div>';
+                    goods_ser.html(templet3);
+                    function first(datas) {
+                        if (datas == 0) {
+                            return 'active';
+                        }
+                        return '';
+                    }
+                }
+                if (!!config.goods_intr.trim()) {
+                    image_text.html(config.goods_intr);
+                }
+                if (!!config.fn_list.length) {
+                    var templet4 = '';
+                    for (var f in config.fn_list) {
+                        var cunt = config.fn_list[f];
+                        templet4 += '<tr><td>' +
+                            cunt.name +
+                            '</td><td>' +
+                            cunt.title +
+                            '</td><td><button class="view" data-detail="' +
+                            cunt.details +
+                            '" >查看</button></td></tr>';
+                    }
+                    compare_table.find('tbody').html(templet4);
+                } else {
+                    compare_table.remove();
+                }
+                if (!config.fn_list.length && !config.goods_intr.trim()) {
+                    $('.center').remove();
+                }
+                $('.customer-service').find('a').attr('href', config.online_customer);
+            });
+            /**
+             *  修改title图标
+             * */
+            $.post('/configs/system_configs.html', function(data) {
+              $('head').append('<link rel="shortcut icon" href="' + data.data.icon + '">');
+              var bottom_img = data.data.mall_background_img;
+              $('.bottom-img').append('<img src="'+bottom_img+'">');
+            });
+          var con=$('#pop-area'),
+              pop_img= $('#pop-img');
+          con.height($(window).height());
+          con.on('click',function(){
+            con.fadeOut('fast');
+            $('#pop-img').fadeOut().removeAttr('src').removeAttr('style');
+          });
+          $('.modal-center-wrap').on('click','img',function(){
+            var that=$(this),
+              img=that.attr('src');
+            con.fadeIn('fast');
+            pop_img.attr('src',img).fadeIn('fast').css('marginLeft',pop_img.width()*-.5);
+          });
+          pop_img.on('mousedown',function(e){
+            var mouseDownX,mouseDownY,initX,initY,flag = false,self;
+            self=$(this);
+            e.preventDefault();
+            //鼠标按下时的鼠标所在的X，Y坐标
+            mouseDownX = e.clientX;
+            mouseDownY = e.pageY;
+            //初始位置的X，Y 坐标
+            initX = self.offset().left;
+            initY = self[0].offsetTop;
+            //表示鼠标已按下
+            flag = true;
+            pop_img.on('mouseup',function(e){
+              flag = false;
+            });
+            $(document).on('mousemove',function(e){
+              e.preventDefault();
+              if(flag) {
+                var mouseMoveX = e.pageX,mouseMoveY = e.pageY;
+                pop_img.css('marginLeft',0);
+                pop_img.css('left',parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX));
+                pop_img.css('top',parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY));
+              }
+            });
+          });
+        })
+    </script>
+</body>
+</html>

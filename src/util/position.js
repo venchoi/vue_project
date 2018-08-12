@@ -1,0 +1,42 @@
+const TOP = 1;
+const RIGHT = 3;
+const BOTTOM = 5;
+const LEFT = 7;
+const CENTER = 9;
+
+const RAISE = 0;
+const STOP = 1;
+const FELL = 2;
+
+const TOP_LEFT = TOP * LEFT;
+const TOP_RIGHT = TOP * RIGHT;
+const TOP_CENTER = TOP * CENTER;
+
+const BOTTOM_LEFT = BOTTOM * LEFT;
+const BOTTOM_RIGHT = BOTTOM * RIGHT;
+const BOTTOM_CENTER = BOTTOM * CENTER;
+
+const LEFT_CENTER = LEFT * CENTER;
+const RIGHT_CENTER = CENTER * RIGHT;
+
+export {
+  TOP,
+  RIGHT,
+  BOTTOM,
+  LEFT,
+  CENTER,
+  TOP_LEFT,
+  TOP_RIGHT,
+  TOP_CENTER,
+
+  BOTTOM_CENTER,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT,
+
+  LEFT_CENTER,
+  RIGHT_CENTER,
+
+  RAISE,
+  STOP,
+  FELL,
+};

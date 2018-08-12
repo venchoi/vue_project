@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>----</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="=">
+  <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=no" />
+  <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <style>
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      font: 15px/1.5 '微软雅黑';
+    }
+
+    html * {
+      box-sizing: border-box;
+      background-position: center;
+    }
+
+    body {
+      min-width: 1024px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+<script>
+  ;(function () {
+    "use strict";
+    if(typeof  $ == 'undefined' ){
+      console.error('需要依赖jQuery，请引入jQuery')
+    }
+    var ycjAdv = function () {
+      var options = {
+          img:[]
+        },
+        $container = $('#container').length >1 ? $('#container') :  $('<div id="container"></div>')
+      this.getOption = function () {
+        return options
+      };
+      this.getContainer = function () {
+        return $container;
+      };
+      return function (option,type) {
+        options = $.extend({},option)
+
+        return this.init(type);
+      }.bind(this)
+    }
+    ycjAdv.prototype = {
+      constructor:ycjAdv,
+      init:function (type) {
+        var options = this.getOption();
+
+        if(type == 'm' || type == 'app'){
+          this.lunchRem();
+          this.mImgCreater(options.img,type == 'app');
+          if(!!options.wechat){
+            this.weChat(options.wechat);
+          }
+        }else {
+          this.imgCreater(options.img);
+          if(!!options.form){
+            this.PcfromData(options.form);
+          }
+        }
+        return this
+      },
+      //pc 端 ui
+      imgCreater:function (img) {
+        var $container = this.getContainer(),
+          self = this;
+        $container.empty();
+        img.forEach(function (v,i) {
+          var $img = $('<img/>').prop('src',v.url).data('index',i),
+            $block = $('<div class="img_'+i+'"></div>').css('background-image','url('+v.url+')').css('position','relative');
+          $img.load(function (){
+            var index = $(this).data('index'),
+              height = this.naturalHeight || this.height;
+            if($('.img_'+index).length <1){
+              $block.height(height);
+            }else{
+              $('.img_'+index).height(height);
+            }
+          })
+          if(v.btn){
+            v.btn.forEach(function (btn,btn_i) {
+              var window_w = $(window).width(),
+                $btn = $('<a id="btn_'+i+'_'+btn_i+'"></a>');
+              if(window_w <1030){
+                window_w = 1030
+              }
+              $btn.css({
+                'position':'absolute',
+                'height':parseFloat(btn.height),
+                'width':parseFloat(btn.width),
+                'top':parseFloat(btn.top),
+                'left':parseFloat(btn.left) - 15 - (1920 - window_w)/2,
+              });
+              if(!!btn.href){
+                $btn.prop('href',btn.href);
+              }
+              if(!!btn.css){//btn增加样式
+                $btn.css(btn.css);
+              }
+              if(!!btn.text){
+                $btn.html(btn.text);
+              }
+              if(!!btn.clickevent){
+                if(!!btn.clickevent.is_login){//是否登录
+                  if(btn.clickevent.is_proxy==1){//是否代理
+                    $btn.prop('href',btn.clickevent.login_proxy_href);
+                  }else{
+                    $btn.prop('href',btn.clickevent.login_no_proxy_href);
+                  }
+                }else{
+                  $btn.prop('href',btn.clickevent.no_login_href);
+                }
+              }
+              $block.prepend($btn);
+            })
+          }
+          $container.append($block);
+        })
+        $('body').prepend($container);
+        window.onresize = function () {
+          self.resizeBtn(img);
+          if(!!self.getOption.form){
+            self.resizeForm();
+          }
+        }
+
+      },
+      resizeBtn:function (img) {
+        img.forEach(function (v,i) {
+          if(v.btn){
+
+            v.btn.forEach(function (btn,btn_i) {
+              var window_w = $(window).width(),
+                $btn = $('#btn_'+i+'_'+btn_i);
+              if(window_w <1030){
+                window_w = 1030
+              }
+              $btn.css('left',parseFloat(btn.left) -5 - (1920 - window_w)/2 )
+            })
+          }
+        })
+      },
+      resizeForm:function(){
+        if(this.getOption().form){
+          var left=this.getOption().form.left;
+        }
+        var window_w = $(window).width();
+        if(window_w <1030){
+          window_w = 1030
+        }
+        var form_area=$('#form-area');
+        form_area.css('left',left +5 - (1920 - window_w)/2);
+      },
+      //移动端ui
+      lunchRem:function () {
+        (function(doc, win) {
+          var docEl = doc.documentElement,
+            resizeEvt = "orientationchange" in window ? "orientationchange" : "resize",
+            recalc = function() {
+              var clientWidth = docEl.clientWidth;
+              // console.log( clientWidth  );
+              if (!clientWidth) return;
+              if (clientWidth < 760) {
+                docEl.style.fontSize = 32 * (clientWidth / 760) + "px";
+                // console.log( clientWidth  );
+              } else {
+                // console.log( clientWidth  );
+                docEl.style.fontSize = 32 * (760 / 760) + "px";
+              }
+            };
+          if (!doc.addEventListener) return;
+          win.addEventListener(resizeEvt, recalc, false);
+          doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+      },
+      mImgCreater:function (img,is_app) {
+        var $container = this.getContainer(),
+          self = this;
+        $container.empty();
+        img.forEach(function (v,i) {
+          var $img = $('<img/>').prop('src',v.url).data('index',i),
+            $block = $('<div class="img_'+i+'"></div>').css('position','relative'),
+            scale;
+          $img.load(function (){
+            var index = $(this).data('index'),
+              height = this.naturalHeight || this.height,
+              width = this.naturalWidth || this.width;
+            scale = 760 / width;
+            if($('.img_'+index).length <1){
+              $block.width('23.75rem');
+            }else{
+              $('.img_'+index).width('23.75rem');
+            }
+            $block.append($img)
+            if(v.btn){
+              v.btn.forEach(function (btn,btn_i) {
+                var window_w = $(window).width(),
+                  $btn = $('<a id="btn_'+i+'_'+btn_i+'"></a>');
+                if(window_w <1030){
+                  window_w = 1030
+                }
+                $btn.css('position','absolute')
+                  .css('top',btn.top * scale /32 +'rem')
+                  .css('height',btn.height* scale /32 +'rem')
+                  .css('width',btn.width* scale /32 +'rem')
+                  .css('left',btn.left* scale /32 +'rem' )
+
+                if(!!btn.href){
+                  $btn.prop('href',btn.href);
+                }
+                if(!!btn.css){//btn增加样式
+                  $btn.css(btn.css);
+                }
+                if(!!btn.text){
+                  $btn.html(btn.text);
+                }
+                $block.prepend($btn);
+                if(!!btn.clickevent){//根据登录情况去不同页面
+                  if(btn.clickevent.is_login!=0){
+                    $btn.prop('href',btn.clickevent.login_href);
+                  }else{
+                    $btn.prop('href',btn.clickevent.no_login_href);
+                  }
+                }
+              })
+            }
+            if(is_app){
+              self.buttomHref();
+            }
+          })
+          $container.append($block);
+        })
+        $('body').prepend($container);
+
+      },
+      buttomHref:function () {
+        var u = navigator.userAgent,
+          isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1, //android终端
+          isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+          androidUrl = 'http://app.qq.com/#id=detail&appid=1150001578',
+          weixinUrl = 'http://a.app.qq.com/o/simple.jsp?pkgname=com.pointercn.yunvs',
+          iosUrl = 'https://itunes.apple.com/cn/app/apple-store/id824146578?pt=17904800&ct=yuncaijing_app_m_btn&mt=8';
+
+        $.each($('a'),function (index, ele) {
+
+          if (isAndroid) {
+            //  console.log(ele)
+            $(ele).prop('href',androidUrl);
+          } else if (isiOS) {
+            if (isWeiXin()) {
+              $(ele).prop('href',weixinUrl);
+            } else if (isWeiBO()) {
+              addWeiBOTips();
+              $(ele).prop('href',iosUrl);
+            } else {
+              $(ele).prop('href',iosUrl);
+            }
+          } else {
+            $(ele).prop('href',androidUrl);
+          }
+        })
+        function isWeiXin() {
+          var ua = window.navigator.userAgent.toLowerCase();
+          if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+            return true;
+          } else {
+            return false;
+          }
+        }
+        function isWeiBO() {
+          var ua = window.navigator.userAgent.toLowerCase();
+          if (ua.match(/WeiBo/i) == "weibo") {
+            return true;
+          } else {
+            return false;
+          }
+        }
+        function addWeiBOTips() {
+          var winHeight = typeof window.innerHeight != 'undefined' ? window.innerHeight : document.documentElement.clientHeight;
+          var weiBoTip = $('<div id="weiBoTip"><p><img src="http://{$Think.M_DOMAIN}/res/touch/img/share/live_weixin.jpg" alt="微博打开"/></p></div>');
+          $("body").append(weiBoTip);
+          $("#weiBoTip").css({
+            "position": "fixed",
+            "left": "0",
+            "top": "0",
+            "height": winHeight,
+            "width": "100%",
+            "z-index": "1000",
+            "background-color": "#f8f8f8",
+            "filter": "alpha(opacity=80)",
+          });
+          $("#weiBoTip img").css({
+            "left": "0",
+            "top": "0",
+            "z-index": "1001",
+
+          });
+        }
+      },
+      //表单方法
+      PcfromData:function (data) {
+        var self=this;
+        var pc_from_html='<div id="form-area"><label style="display: none"><input type="text"></label><label style="display: none"><input type="password"></label> <div><i class="icon icon-phone"></i><input type="text" name="phone" id="phone" placeholder="请输入11位手机号码" autocomplete="off"><p class="error-tip"></p></div> <div><i class="icon icon-shield"></i><input type="text" name="imgcode" id="imgcode" placeholder="请输入图片验证码" autocomplete="off"><img src="/auth/get_verify.jpg?1481807513246" alt="图片验证码" title="点击切换验证码" class="verify" ><p class="error-tip"></p></div><div><i class="icon icon-sms"></i><input type="text" name="message" id="message" placeholder="请输入短信验证码" autocomplete="off"><span id="get-message">获取短信码</span><p class="error-tip"></p><div class="mask-message"></div></div><div id="password-area"><i class="icon icon-password"></i><input type="text" name="password" id="password" placeholder="请设置6~13位密码" autocomplete="off"><p class="error-tip"></p></div> <div class="check-div"><label class="lab-check" for="check"><input type="checkbox" id="check" checked="checked" /><i class="mask" onclick="return false"></i></label><p class="agree">我已阅读并同意《<a href="/help/134.html" target="_blank" title="用户注册协议"> 用户注册协议 </a>》</p></div> <div class="reg-area"><img src="http://aliyun.yuncaijing.com/upload/2016-12-02/584133f726e49.png" id="reg"></div></div><img src="http://aliyun.yuncaijing.com/upload/2016-11-30/583e450bb0e18.png" style="display: none">';
+        var pc_form_style='* {font-family: "Microsoft YaHei","iconfont"  !important;box-sizing: border-box;}i{font-style:normal}#form-area{position: absolute;z-index: 100;width:398px;height:366px;padding: 22px 36px;background-color: #fff;}#form-area>div{width:100%;height:54px;line-height: 42px;color: #b4b4b4;border-bottom: 1px solid #b4b4b4;position: relative;}#form-area>p{width:100%;height: 18px;line-height: 18px;font-size: 16px;color: #ff3232;}.error-tip{display: none;position: absolute;left: 36px;top: 30%;margin-top: -10px;width: 170px;height:42px;line-height: 42px;font-size: 16px;background-color: #fff;color: #ff3232;padding-left: 17px;white-space: nowrap;}#form-area>div .icon{font-size: 24px;height:42px;margin-left: 10px;font-weight: 100;position: relative;top: 3px;}.icon-phone{margin-left: 10px!important;}.icon-password{font-size: 22px!important;top:2px!important;}input{font-family: "微软雅黑", Arial, "Trebuchet MS", Helvetica, Verdana;outline: none;border: 0;width: 168px;height: 100%;position: relative;padding-left: 20px;font-size: 16px;color: #b4b4b4;}#phone{padding-left: 16px;}.verify,#get-message,.mask-message{float: right;width:120px;height: 46px;position: relative;top: 3px;cursor: pointer;}#get-message{line-height: 46px;text-align: center;background-color: #2c50a9;font-size: 16px;color: #fff;}.mask-message{display: none;position: absolute;right:0;top:3px;cursor: default;z-index: 100000;}#imgcode,#message{width:150px;}.lab-check{float: left;width:16px;height:16px;margin: 0 14px;margin-right: 10px;background: url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e44fad6177.png") center no-repeat ;background-size: contain;position: relative;}.mask{position: absolute;z-index: 10000000;display: block;background-color:#fff;left: 0;top:17px;width:16px;height: 16px;visibility: hidden;cursor: default!important;}#check{width:14px;position: absolute;left: 0;top:2px;color: transparent;border: 0;visibility: hidden;}.check-div{border-bottom: 0!important;height: 20px!important;margin-top: 20px;margin-bottom: 10px;}.agree{line-height: 16px;font-size: 16px;}.agree>a{color:#2c50a9}.reg-area{border-bottom: 0!important;}.reg-area>img{display: block;width:100%;cursor: pointer;}.error-li{color: #ff505c!important;border-bottom-color:#ff505c!important;}.tip-mask{width:100%;height:100%;display: none;position: fixed;left: 0;top:0;background:rgba(0,0,0,.5);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#7f000000,endColorstr=#7f000000);z-index: 10000000;}.tool-tip{padding: 30px 60px;position: absolute;left: 50%;top:20%;margin-left:-200px;margin-top: 120px;z-index: 10000;background-color: #fff;color: #fff;border: 1px solid #fff;text-align: center;font-size: 18px;}';
+        var form=data;
+        $(form.container).css('position','relative');
+        $(function() {
+          if (!placeholderSupport()) { // 判断浏览器是否支持 placeholder
+            $('[placeholder]').focus(function() {
+              var input = $(this);
+              if (input.val() == input.attr('placeholder')) {
+                input.val('');
+                input.removeClass('placeholder');
+              }
+            }).blur(function() {
+              var input = $(this);
+              if (input.val() == '' || input.val() == input.attr('placeholder')) {
+                input.addClass('placeholder');
+                input.val(input.attr('placeholder'));
+              }
+            }).blur();
+          };
+        });
+        function placeholderSupport() {
+          return 'placeholder' in document.createElement('input');
+        }
+        function addCssByStyle(cssString){
+          var doc=document;
+          var style=doc.createElement("style");
+          if(style.styleSheet){
+            style.styleSheet.cssText = cssString;
+          } else {
+            var cssText = doc.createTextNode(cssString);
+            style.appendChild(cssText);
+          }
+
+          var heads = $('head');
+          if(heads.length)
+            heads.append(style);
+          else
+            doc.append(style);
+        }
+        function addLinkFont(){
+          var doc=document;
+          var link=doc.createElement("link");
+          link.setAttribute("rel", "stylesheet");
+          link.setAttribute("type", "text/css");
+          link.setAttribute("href", '//at.alicdn.com/t/font_sflvevik2tck57b9.css');
+          $('head').append(link);
+        }
+        addCssByStyle(pc_form_style);
+        addLinkFont();
+        $(form.container).append(pc_from_html);
+        $('body').append('<div class="tip-mask"><div class="tool-tip"></div></div>');
+        var form_area=$('#form-area');
+        form_area.css({'top':form.top});
+        var window_w = $(window).width();
+        if(window_w <1030){
+          window_w = 1030
+        }
+        form_area.css('left',form.left - (1920 - window_w)/2);
+        $('.tip-mask').css({
+          'width':$(document.body).width()
+        });
+        var red='#ff505c',
+          green='#00be70';
+        $('.verify').on('click',function() {
+          var random='/auth/get_verify.jpg?v='+Math.random();
+          $('.verify').attr('src',random);
+        });
+        $('.lab-check').on('click',function(){
+          if($(this).children('input').is(':checked')){
+            $(this).css('backgroundImage','url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e44fad6177.png")');
+          }else {
+            $(this).css('backgroundImage','url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e450bb0e18.png")');
+          }
+        });
+        $('#reg').on('click',function(){
+          if(self.checkNumber()&&self.checkImgCode()&&self.checkSmsCode()&&self.checkPassword()&&checkbox()){
+            $.post('/auth/do_sign_up2/yapi/ajax.html',{
+              phone:$('#phone').val(),
+              code:$('#message').val(),
+              password:$('#password').val()
+            },function(msg){
+              if (msg.error_code.charAt(0) == '2'||msg.error_code.charAt(0) == '1') {
+                tips(red, msg.msg);
+              }else{
+                tips(green,'注册成功');
+                window.location.href='/';
+              }
+            });
+          }
+        });
+        $('#get-message').click(function(){
+          if(self.checkNumber()&&self.checkImgCode()){
+            $.post("/auth/send_sms_to/yapi/ajax.html", {
+              phone: $('#phone').val(),
+              verify: $('#imgcode').val(),
+              type: '1'
+            }, function (msg) {
+              if (msg.error_code.charAt(0) == '2'||msg.error_code.charAt(0) == '1') {
+                tips(red, msg.msg);
+              }else{
+                tips(green, '短信发送成功');
+                timeRun($('#get-message'));
+              }
+            }, 'json');
+          }
+        });
+        function timeRun(el){
+          var sec=60;
+          $('.mask-message').show();
+          setInterval(function () {
+            if(sec===0){
+              el.html('获取短信码');
+              $('.mask-message').hide();
+            }else if(sec>0) {
+              el.html(sec-1+'s重新发送');
+            }
+            sec--;
+          },1000);
+        }
+        function tips(color,msg){
+          $('.tip-mask').stop().fadeIn(
+            function () {
+              setTimeout(function(){
+                $('.tip-mask').stop().fadeOut('slow');
+              },1500);
+            }
+          );
+          $('.tool-tip').html(msg).css({
+            'color':color,
+            'border-color':color
+          });
+        }
+        $('.error-tip').on('click',function(){
+          $(this).siblings('input').focus();
+          $(this).parent().removeClass('error-li');
+          $(this).hide();
+        });
+        $('#password').on('focus',function(){
+          $(this).attr('type','password');
+        }).on('blur',function(){
+          if(!!$(this).val().length){
+
+          }else {
+            $(this).attr('type','text');
+          }
+
+        })
+        function checkbox() {
+          var input = $('#check');
+          if (input.prop('checked')) {
+            return true;
+          }
+          tips(red,'您尚未同意用户注册协议！');
+          return false;
+        }
+      },
+      MfromData:function(data){
+        var self=this;
+        var m_form_html='<div class="form-area"><ul class="input-list"><li><i class="icon icon-phone"></i><input type="text" name="phone" id="phone" placeholder="请输入11位手机号码"><p class="error-tip">asdas</p></li><li><i class="icon icon-shield"></i><input type="text" name="imgcode" id="imgcode" placeholder="请输入图片验证码"><img src="/auth/get_verify.jpg?1481807513246" alt="图片验证码" title="点击切换验证码" class="verify" ><p class="error-tip">dasdasd</p></li><li><i class="icon icon-sms"></i><input type="text" name="messagecode" id="message" placeholder="请输入短信验证码"><a href="javascript:void(0)" id="get-message">获取短信码</a><a href="javascript:void(0)" class="mask-message" style="display: none"></a><p class="error-tip">asdasd</p></li><li><i class="icon icon-password"></i><input type="password" name="password" id="password" placeholder="请设置6~13密码"><i class="icon icon-eye" id="change-type"></i><p class="error-tip">asdasd</p></li></ul><aside> <label id="check-lable"><input type="checkbox" name="check" id="check" checked></label>我已阅读并同意《<a href="/signup" target="_blank" title="用户注册协议"> 用户注册协议 </a>》</aside><aside class="reg-btn"><a href="javascript:void(0)" id="reg">注&nbsp;&nbsp;册</a><a class="reg-mask">&nbsp;&nbsp;</a></aside><p class="yun">--&nbsp;让&nbsp;您&nbsp;的&nbsp;炒&nbsp;股&nbsp;更&nbsp;科&nbsp;学&nbsp;--</p></div>';
+        var m_form_style='* {font-family: "Microsoft YaHei","iconfont"  !important;margin:0;padding:0;box-sizing: border-box;}i{font-style:normal}a{text-decoration: none;}ul>li{list-style:none;}.tips{width: 100%;position: fixed;font-size: .8rem;left:0;top:20%;color: #fff;text-align: center;z-index: 100000;}.tool-tip{background-color: #fff;text-align: center;width:60%;height: 3rem;line-height: 3rem;font-size: 1rem;margin:0 auto;border-radius:.6rem;display: none;}.bd-bg{width:100%;height: auto;}section{position: relative;}.form-area{position: absolute;background: #fff;width:19.375rem;height:20.78125rem;border-radius: 0.75rem;padding: 1.4rem 0.9375rem;}.input-list{margin-bottom: 0!important;width:100%;}.input-list>li{position: relative;width:100%;height:2.75rem;color: #b4b4b4;border-bottom:1px solid #b4b4b4 ;}.error-tip{position: absolute;left:3.26rem;top:50%;margin-top: -.9rem;width: 9.5rem;height:2rem;line-height: 2rem;font-size: 1rem;margin-bottom: 0!important;background-color: #fff;color: #ff3232;display: none;}.error-tip:before{content: "";position: absolute;left:-.5rem;top:0;width:.5rem;height:2rem;background-color: #fff;}.error-li{color: #ff3232!important;border-bottom-color:#ff3232!important;}.input-list>li .icon{width:2.625rem;height:2.75rem;line-height: 2.5rem;text-align: center;font-size: 1.3rem;padding-left:.9rem;}a:hover{text-decoration: none!important;}.icon-phone:before{margin-left: 0rem;}.icon-password{font-size: 1.1rem!important;}input{border: 0;outline: 0;width: 9.5rem;height:2rem;line-height: 2rem;font-size: 1rem;color: #959595;padding-left:1rem;}#phone{width: 10.5rem;}#phone+.error-tip{width:10.5rem;}#get-message,.verify,.mask-message{width: 5rem;height:2rem;float: right;position: relative;top:.35rem;}#get-message,.mask-message{line-height: 2rem;text-align: center;color: #fff;background-color: #306ec8;font-size: .8rem;border-radius: .5rem;}.mask-message{position: absolute;right:0;top:50%;margin-top: -.98rem;background-color: transparent;}.icon-eye,.icon-eye-dark{float: right;margin-right:0.625rem;}.icon-eye-dark{color: #306ec8!important;font-size: 1.4rem!important;position: relative;top: .16rem;}#check,#check-lable{float: left;width:0.9rem;height:0.9rem;visibility: hidden;}#check-lable{position: absolute;top:50%;margin-top: -0.45rem;left:1rem;background: url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e44fad6177.png") center no-repeat;background-size: contain;visibility: visible;}aside{width: 100%;height: 2rem;line-height: 2rem;position: relative;color: #959595 ;text-indent: 2.85rem;font-size: .9rem;white-space: nowrap;}#check-lable+a{color:#2c50a9;}.reg-btn{height: 2.5rem;margin-top: .5rem;margin-bottom: 0.625rem;padding: 0;}#reg,.reg-mask{width:15.625rem;height: 2.5rem;line-height: 2.5rem;color: #fff;border-radius: 2.5rem;text-align: center;background-color:#ff3232;display: block;margin: 0 auto;font-size: 1.2rem;text-indent: 0;}.reg-mask{display: none;position: absolute;left: 0;top:0;width:100%;height: 100%;background-color: transparent;z-index: 1000;}.yun{text-align: center;white-space: nowrap;color: #bebebe;font-size: 1rem;}';
+        var form=data;
+        function addCssByStyle(cssString){
+          var doc=document;
+          var style=doc.createElement("style");
+          if(style.styleSheet){
+            style.styleSheet.cssText = cssString;
+          } else {
+            var cssText = doc.createTextNode(cssString);
+            style.appendChild(cssText);
+          }
+          var heads = $('head');
+          if(heads.length)
+            heads.append(style);
+          else
+            doc.append(style);
+        }
+        function addLinkFont(){
+          var doc=document;
+          var link=doc.createElement("link");
+          link.setAttribute("rel", "stylesheet");
+          link.setAttribute("type", "text/css");
+          link.setAttribute("href", '//at.alicdn.com/t/font_sflvevik2tck57b9.css');
+          $('head').append(link);
+        }
+        addCssByStyle(m_form_style);
+        addLinkFont();
+        $(form.container).append(m_form_html);
+        $('body').append('<div class="tips"><p class="tool-tip"></p></div>');
+        var form_area=$('.form-area');
+        form_area.css({'top':form.top/32+'rem',
+          'left':'50%',
+          'marginLeft':-10.6+'rem'
+        });
+        $('.verify').on('click',function() {
+          var time='/auth/get_verify.jpg?v='+Math.random();
+          $('.verify').attr('src',time);
+        });
+        $('#check-lable').on('click',function(){
+          $(this).children('input').is(':checked') ? $(this).css('backgroundImage','url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e44fad6177.png")') :  $(this).css('backgroundImage','url("http://aliyun.yuncaijing.com/upload/2016-11-30/583e450bb0e18.png")');
+        });
+        $('#change-type').on('click',function(){
+          $(this).siblings('#password').attr('type')=='password' ?$(this).removeClass('icon-eye').addClass('icon-eye-dark').siblings('#password').attr('type','text') :$(this).removeClass('icon-eye-dark').addClass('icon-eye').siblings('#password').attr('type','password')
+        });
+        $('.error-tip').on('click',function(){
+          $(this).parent().removeClass('error-li');
+          $(this).hide().siblings('input').focus();
+        })
+        var red='#d22222',
+          green='#959595';
+        function tips(color,msg){
+          $('.tool-tip').html(msg).stop().fadeIn('normal').css('color',color);
+          setTimeout(function(){
+            $('.tool-tip').html('').stop().fadeOut('normal');
+          },2000);
+        };
+        function timeRun(el){
+          var sec=60;
+          $('.mask-message').show();
+          setInterval(function () {
+            if(sec===0){
+              el.html('获取短信码');
+              $('.mask-message').hide();
+            }else if(sec>0) {
+              el.html(sec-1+'s重发');
+            }
+            sec--;
+          },1000);
+        }
+        $('#get-message').click(function () {
+          if(self.checkNumber()&&self.checkImgCode()) {
+            $.post("/Auth/sendSmsTo", {
+              phone: $('#phone').val(),
+              verify: $('#imgcode').val(),
+              type: '1'
+            }, function (msg) {
+              if (msg.error_code.charAt(0) == '2'||msg.error_code.charAt(1) == '2') {
+                tips(red, msg.msg);
+              }else{
+                tips(green, '短信发送成功');
+                timeRun($('#get-message'));
+              }
+            }, 'json');
+          }
+        });
+        $('#reg').on('click',function(){
+          if(self.checkNumber()&&self.checkImgCode()&&self.checkSmsCode()&&self.checkPassword()&&checkbox()){
+            $.post('/auth/doSignUp2',{
+              phone:$('#phone').val(),
+              password:$('#password').val(),
+              verify:$('#imgcode').val(),
+              smscode:$('#message').val(),
+              agree:'on'
+            },function(msg){
+              if (msg.error_code.charAt(0) == '2'||msg.error_code.charAt(1) == '2') {
+                tips(red, msg.msg);
+              }else if(msg.error_code=='1100'){
+                tips(green, '注册成功');
+                $('.reg-mask').show();
+                window.location.href='/';
+              }
+            },'json');
+          }
+        })
+        function checkbox() {
+          var input = $('#check');
+          if (input.prop('checked')) {
+            return true;
+          }
+          tips(red, '您尚未同意用户注册协议');
+          return false;
+        }
+      },
+      checkNumber: function() {
+        var input = $('#phone');
+        var tel= /^1[34578]\d{9}$/;
+        if (!input.val()) {
+          input.siblings('.error-tip').show().html('请输入手机号码');
+          input.parent().addClass('error-li');
+        } else if (tel.test(input.val())) {
+          input.parent().removeClass('error-li');
+          input.siblings('.error-tip').hide();
+          return true;
+        } else {
+          input.parent().addClass('error-li');
+          input.siblings('.error-tip').show().html('手机号码格式错误');
+        }
+        return false;
+      },
+      checkPassword:function(){
+        var input=$('#password');
+        if (!input.val()) {
+          input.parent().addClass('error-li');
+          input.siblings('.error-tip').show().html('请输入密码');
+        }else{
+          if (input.val().length < 6 || input.val().length > 13) {
+            input.parent().addClass('error-li');
+            input.siblings('.error-tip').show().html('请输入6~13位密码');
+          }else {
+            input.parent().removeClass('error-li');
+            input.siblings('.error-tip').hide();
+            return true;
+          }
+        }
+        return false;
+      },
+      checkImgCode:function() {
+        var input = $('#imgcode');
+        if (!input.val()) {
+          input.parent().addClass('error-li');
+          input.siblings('.error-tip').show().html('请输入图片验证码');
+        } else {
+          input.parent().removeClass('error-li');
+          input.siblings('.error-tip').hide();
+          return true;
+        }
+        return false;
+      },
+      checkSmsCode:function () {
+        var input = $('#message');
+        if (!input.val().trim()) {
+          input.parent().addClass('error-li');
+          input.siblings('.error-tip').show().html('请输入短信验证码');
+        } else {
+          input.parent().removeClass('error-li');
+          input.siblings('.error-tip').hide();
+          return true;
+        }
+        return false;
+      },
+      //M端微信
+      weChat:function(data){
+        wx.config(data.wxconfig);
+        wx.ready(function() {
+          wx.onMenuShareTimeline({
+            title: data.title, // 分享标题
+            link: data.link, // 分享链接
+            imgUrl: data.imgUrl, // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
+          });
+          wx.onMenuShareAppMessage({
+            title: data.title, // 分享标题
+            desc: data.desc, // 分享描述
+            link: data.link, // 分享链接
+            imgUrl: data.imgUrl, // 分享图标
+            type: 'link', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function() {
+            },
+            cancel: function() {// 用户取消分享后执行的回调函数
+            }
+          });
+        });
+      },
+      fn:function () {
+        console.log('ycj');
+      }
+    }
+    window.adv = new ycjAdv()
+  }())
+</script>
+<script>
+  var id = window.location.search.split('=')[1];
+  $.post("/mall/activity.html", {
+    id,
+  }, function(data) {
+    var config = data.data,
+        img = config.pc,
+        pic = [];
+    document.title = config.title;
+    for (var i in img) {
+      pic.push({
+        url:img[i]['url'],
+        btn:btn(img[i]['btn'])
+      });
+      function btn(data) {
+        var bt = [];
+        for (var k in data) {
+          bt.push({
+            'top':data[k][3],
+            'href':data[k][4],
+            'left':data[k][2],
+            'width':data[k][0],
+            'height':data[k][1],
+          })
+        }
+        return bt;
+      };
+    }
+    adv({img:pic});
+  });
+  $.post('/configs/system_configs.html', function(data) {
+    $('head').append('<link rel="shortcut icon" href="' + data.data.icon + '">'); //修改浏览器图标
+  });
+</script>
+</body>
+</html>

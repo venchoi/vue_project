@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=no" />
+  <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <link rel="stylesheet" id="default-skin" href="./mallSkin/skin_2.css">
+  <style>
+    #pop-area{
+      display: none;
+      width:100%;
+      position: fixed;
+      top:0;
+      left:0;
+      background:rgba(0,0,0,.4);
+      z-index: 3000;
+    }
+    #pop-img{
+      top:3%;
+      left:50%;
+      display: none;
+      position: fixed;
+      z-index: 3001;
+      width:auto;
+      margin:0 auto;
+      cursor:move;
+    }
+    .bottom-img{
+      position: relative;
+      width: 100%;
+    }
+    .bottom-img>img{
+      display: block;
+      width: 100%;
+    }
+    #mall .center {
+      margin-bottom: 0!important;
+    }
+  </style>
+</head>
+
+<body id="mall">
+<div id="pop-area"></div>
+<img id="pop-img">
+  <header>
+    <div class="topbar">
+      <div class="topbar-wrap">
+        <span class="logo">
+          <img src="">
+        </span>
+        <ul class="topbar-right">
+        </ul>
+      </div>
+    </div>
+  </header>
+  <div class="carousel-wrap">
+    <div class="carousel">
+      <div class="carousel-inner">
+        <ul></ul>
+      </div>
+      <div class="carousel-indicators">
+        <ul></ul>
+      </div>
+      <span class="carousel-btn hidden">
+        <a class="carousel-prev" href="javascript:;"></a>
+        <a class="carousel-next" href="javascript:;"></a>
+      </span>
+    </div>
+  </div>
+  <div class="center">
+    <div class="column-list"></div>
+    <div class="product-compare">
+      <div class="product-compare-title">
+        <span class="column-equal"></span>
+        <span class="column-title-text">功能对比</span>
+        <span class="column-equal"></span>
+      </div>
+      <table class="compare-table">
+        <thead>
+          <tr></tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<div class="bottom-img"></div>
+  <div class="customer-service">
+    <a href="/" target="_blank">
+      <img src="http://aliyun.yuncaijing.com/upload/2017-08-08/59897be2aefc8.png">
+    </a>
+  </div>
+  <div class="modal" data-modal-id>
+    <div class="modal-bg"></div>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h3 class="modal-title">功能详情</h3>
+          <span class="close-btn"></span>
+        </header>
+        <div class="modal-center-wrap">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+  //carousel.js
+  +
+  function($) {
+    var fnEmpty = function() {};
+    var config = {
+      interval: 5000,
+      onPrev: fnEmpty,
+      onNext: fnEmpty,
+      onIndicator: fnEmpty
+    };
+
+    function Carousel(options, context) {
+      this.settings = $.extend({}, config, options);
+      this.carousel = $(context);
+      this.innerUl = this.carousel.find('.carousel-inner ul');
+      this.innerLi = this.innerUl.find('li');
+      this.indicators = this.carousel.find('.carousel-indicators li');
+      this.prev = this.carousel.find('.carousel-prev');
+      this.next = this.carousel.find('.carousel-next');
+
+      this.slideLength = this.innerLi.length;
+      this.curIndex = 1;
+      this.slideWidth = 0;
+      this.timer = null;
+
+      this.carousel.find('img').each(function() {
+        $(this).attr('src', $(this).attr('data-src')).removeAttr('data-src').removeAttr('style');
+      });
+
+      this.innerUl.prepend(this.innerLi.last().clone())
+        .append(this.innerLi.first().clone());
+
+      this.init();
+      this.handler();
+      this.startTimer();
+    }
+
+    Carousel.prototype = {
+      constructor: Carousel,
+      init: function() {
+        this.slideWidth = this.carousel.outerWidth();
+        this.innerUl.find('li').css('width', this.slideWidth);
+        this.innerUl.css({
+          width: this.slideWidth * (this.slideLength + 2),
+          left: -this.slideWidth * this.curIndex
+        });
+      },
+      resize: function() {
+        $(window).on('resize.xui.carousel', this.init.bind(this));
+      },
+      handler: function() {
+        this.resize();
+        //hover pasued
+        this.prev.add(this.next).add(this.indicators)
+          .hover(this.endTimer.bind(this), this.startTimer.bind(this));
+
+        var self = this;
+        this.prev.click(this.counter.bind(this, true));
+        this.next.click(this.counter.bind(this, false));
+        this.indicators.click(function() {
+          self.changeIndicators($(this).index());
+          self.curIndex = $(this).index() + 1;
+          self.slide();
+        });
+      },
+      slide: function() {
+        if (this.curIndex > this.slideLength) {
+          this.changeIndicators(0);
+        } else if (this.curIndex < 1) {
+          this.changeIndicators(this.slideLength - 1);
+        } else {
+          this.changeIndicators(this.curIndex - 1);
+        }
+
+        var self = this;
+        this.innerUl.stop().animate({
+          left: -this.slideWidth * this.curIndex
+        }, function() {
+          if (self.curIndex > self.slideLength) {
+            self.curIndex = 1;
+            self.innerUl.css('left', -self.slideWidth);
+          } else if (self.curIndex < 1) {
+            self.curIndex = self.slideLength;
+            self.innerUl.css('left', -self.slideWidth * self.slideLength);
+          }
+        });
+      },
+      counter: function(isPrev) {
+        if (!this.innerUl.is(':animated')) {
+          this.curIndex += isPrev ? -1 : 1;
+          this.slide();
+        }
+      },
+      changeIndicators: function(index) {
+        this.indicators.removeClass('active')
+          .eq(index).addClass('active');
+      },
+      startTimer: function() {
+        this.timer = setInterval(this.counter.bind(this), this.settings.interval);
+      },
+      endTimer: function() {
+        clearInterval(this.timer);
+      }
+    };
+
+    $.fn.carousel = function(options) {
+      return this.each(function() {
+        new Carousel(options, this);
+      });
+    };
+  }(jQuery);
+
+
+  var product_detail = {}; //商品功能详情
+  $('body').on('click', 'button[data-modal-id]', function(e) {
+    var target_id = $(e.target).data('modal-id'),
+      modal_content = product_detail[target_id];
+    if ($('.modal[data-modal-id="' + target_id + '"]').length) {
+      $('.modal').fadeIn();
+    } else {
+      $('.modal').attr('data-modal-id', target_id).end().find('.modal-center-wrap').html(modal_content);
+      $('.modal').fadeIn();
+    }
+  })
+  $('body').on('click', '.modal-bg', function() {
+    $('.modal').fadeOut();
+  })
+  $('body').on('click', '.column-item-inner', function(e) {
+    var target_url = $(this).find('.buy-it-now').attr('href');
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(target_url);
+  })
+
+
+
+  $.ajax({
+    url: '/mall/index.html',
+    type: 'POST',
+    dataType: 'json',
+    success: function(res) {
+      var data = res.data;
+      var compare_data = data.function;
+      var banner_img = '',
+        href = data.href,
+        banner_indicators = '',
+        column_node = '',
+        column_item = '',
+        column_item_node = '', //商品栏目列表
+        compare_item_node = '',
+        compare_item_function_list = '', //功能对比商品列
+        logo_url = data.logo,
+        online_customer = data.online_customer,
+        banner = data.banner,
+        goods_list = data.goods_list,
+        compare_item_title = compare_data.x,
+        compare_item = compare_data.y;
+      if (!data) {
+        return;
+      }
+      /**
+       * 选取皮肤
+       * */
+      var skin = data.skin;
+      if (skin) {
+        $('head').append('<link rel="stylesheet" href="./mallSkin/skin_'+skin+'.css">');
+        setTimeout(function() {
+          $('#default-skin').remove();
+        }, 500);
+      }
+      //轮播图片
+      if (Array.isArray(banner) && !!banner.length) {
+        banner.forEach(function(val, index) {
+          banner_img += '<li><a ' + (val.url ? 'class="pointer"' : '') + 'href="' + (val.url ? val.url : 'javascript:void(0)') + '" target="_blank"><img src=' + val.img_url + '></a></li>';
+          banner_indicators += '<li ' + (index == 0 ? 'class="active"' : '') + '>' + (index + 1) + '</li>';
+        })
+      }
+
+      //导航列表
+      if (Array.isArray(href)) {
+        var html = '';
+        for (var i in href) {
+          html += '<li> <a href="' + href[i].href_url + '" title="' + href[i].href_name + '" target="_self">' + href[i].href_name + '</a></li>';
+        }
+        $('.topbar-right').empty().html(html);
+      }
+      //商品栏目列表
+      if (Array.isArray(goods_list) && !!goods_list.length) {
+        goods_list.forEach(function(val, index) {
+          var list_data = val.list;
+          list_data.forEach(function(v, i) {
+            column_node = (column_item += createColumn(v))
+          })
+          column_item_node += '<div class="column-item"><div class="column-title"><span class="column-equal"></span> <span class="colum-title-text">' + val.name +
+            '</span><span class="column-equal"></span></div><div class="column-item-wrap">' + column_node + '</div></div>'
+        })
+      }
+
+      //功能对比
+      if (Array.isArray(compare_item_title) && !!compare_item_title.length) {
+        var compare_item_title_list = '';
+        compare_item_title.forEach(function(val, index) {
+          compare_item_title_list += '<th>' + val + '</th>';
+        })
+        $('.compare-table thead tr').html('<th>功能</th>' + compare_item_title_list + '<th>功能详情</th>');
+      }
+
+      if (Array.isArray(compare_item) && !!compare_item.length) {
+        compare_item.forEach(function(val, index) {
+          var key = 'x0111' + index,
+            function_node = '',
+            function_data = val.function
+          product_detail[key] = val.details;
+          try {
+            function_data.forEach(function(v, i) {
+              compare_item_node = (function_node += functionItem(v));
+            })
+          } catch (e) {}
+          compare_item_function_list += '<tr><td>' + val.name + '</td>' + compare_item_node + '<td><button class="view" data-modal-id="' + key + '">查看</button></td></tr>';
+        })
+      }
+
+      $('.logo img').attr('src', logo_url);
+      $('.customer-service a').attr('href', online_customer);
+      $('.carousel-inner ul').empty().html(banner_img);
+      $('.column-list').html(column_item_node);
+      $('.compare-table tbody').html(compare_item_function_list);
+
+
+      if (banner.length > 1) { //轮播图片大于一张
+        $('.carousel-indicators ul').html(banner_indicators);
+        $('.carousel-btn').removeClass('hidden');
+        $('.carousel').carousel({
+          interval: 3000
+        })
+      }
+    }
+  })
+
+
+  $.ajax({
+    url: '/configs/system_configs.html',
+    type: 'POST',
+    dataType: 'json',
+    success: function(res) {
+      var shortcut,
+        data = res.data;
+      if (!!data) {
+        shortcut = '<link id="favison" rel="shortcut icon" type="image/ico" href="' + data.icon + '">';
+        document.title = data.platform_name + '商城';
+        $('head').append(shortcut);
+      }
+      var bottom_img = data.mall_background_img;
+      $('.bottom-img').append('<img src="'+bottom_img+'">');
+    }
+  })
+
+
+
+
+  function functionItem(data) {
+    var check_node = data ? '<span class="check"></span>' : '';
+    return '<td>' + check_node + '</td>';
+  }
+
+  function createColumn(data) {
+    return '<div class="column-item-inner"><span class="item-title">' + data.goods_name + '</span>' +
+      '<div class="item-intro">' +
+      '<div class="item-pic">' +
+      '<img src=' + data.logo_img + '>' +
+      '<ul class="item-price">' +
+      (parseFloat(data.dis_price) ? '<li>' + data.dis_price + '/' + data.period_desc + '</li>' : '') +
+      (parseFloat(data.org_price) ? '<li>' + data.org_price + '/' + data.period_desc + '</li>' : '') +
+      '</ul>' +
+      '<div class="item-des-wrap">' +
+      '<div class="item-des">' +
+      '<p>' + (data.description || '') + '</p>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<a href="' + '/res/static/detail.html?goods_code=' + data.goods_code + '" class="buy-it-now" target="_blank">立即购买</a>' +
+      '</div>';
+  }
+  var con=$('#pop-area'),
+    pop_img= $('#pop-img');
+  con.height($(window).height());
+  con.on('click',function(){
+    con.fadeOut('fast');
+    $('#pop-img').fadeOut().removeAttr('src').removeAttr('style');
+  });
+  $('.modal-center-wrap').on('click','img',function(){
+    var that=$(this),
+      img=that.attr('src');
+    con.fadeIn('fast');
+    pop_img.attr('src',img).fadeIn('fast').css('marginLeft',pop_img.width()*-.5);
+  });
+  pop_img.on('mousedown',function(e){
+    var mouseDownX,mouseDownY,initX,initY,flag = false,self;
+    self=$(this);
+    e.preventDefault();
+    //鼠标按下时的鼠标所在的X，Y坐标
+    mouseDownX = e.clientX;
+    mouseDownY = e.pageY;
+    //初始位置的X，Y 坐标
+    initX = self.offset().left;
+    initY = self[0].offsetTop;
+    //表示鼠标已按下
+    flag = true;
+    pop_img.on('mouseup',function(e){
+      flag = false;
+    });
+    $(document).on('mousemove',function(e){
+      e.preventDefault();
+      if(flag) {
+        var mouseMoveX = e.pageX,mouseMoveY = e.pageY;
+        pop_img.css('marginLeft',0);
+        pop_img.css('left',parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX));
+        pop_img.css('top',parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY));
+      }
+    });
+  });
+  </script>
+</body>
+
+</html>

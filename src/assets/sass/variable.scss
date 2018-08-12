@@ -1,0 +1,48 @@
+$black : #000;
+$blue1 : #223D80;
+$blue2 : #182d57;
+$blue3 : #54FCFC;
+$blue4 : #3370ff;
+$blue5 : #223d80;
+
+$green : #00E600;
+$glassyGreen : rgba($green,0.4);
+$red : #FF3232;
+$glassyRed : rgba($red,0.4);
+$gray: #888;
+
+
+$white : #fff;
+$G1:#c0c0c0;
+$G2:#949494;
+$G3:#212121;
+$G4:#2b2b2b;
+$G5:#4d4d4d;
+$G6:#3b3b3b;
+$G7:#838383;
+
+
+$background:$G3;
+$mask : rgba(#000,0.3);
+$witheMask : rgba($white,0.3);
+
+$title:20px;
+$text:14px;
+$subText:13px;
+$auxilliary:12px;
+
+$sideMenuWidth : 84px;
+$footerHeight : 28px;
+
+%cf{
+  &:after{
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+%text-ellipsis{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
